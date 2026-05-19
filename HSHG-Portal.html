@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>🦞 HSHG Learning Portal</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f5f4f0}
+input{font-family:inherit}
+button{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:3px}
+::-webkit-scrollbar-track{background:transparent}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const{useState,useRef,useEffect}=React;
+const NAVY="#1B2E6B",GOLD="#BF8D2C",GOLD_L="#F5E9CC";
+const pc=p=>p===100?"#16a34a":p>50?GOLD:p>0?"#f59e0b":"#d1d5db";
+const TIER_BG={1:"#dcfce7",2:GOLD_L,3:"#dbeafe",4:"#fce7f3"};
+const TIER_TX={1:"#15803d",2:"#92400e",3:"#1d4ed8",4:"#9d174d"};
+const QUICK=["Kiểm tra nhanh","SOP chuẩn","Mẹo thực chiến","Giải thích thêm","Lỗi phổ biến"];
+
+const MODULES=[
+  {id:"TS-T1-001",station:"Hải Sản Tươi Sống",tier:1,name:"Sơ chế Tôm Hùm",duration:45,desc:"Kỹ thuật sơ chế, kiểm tra chất lượng và bảo quản tôm hùm theo chuẩn HSHG. Yield chuẩn BOM: 85%.",objectives:["Nhận biết tôm hùm tươi sống đạt chuẩn","Quy trình 5 bước sơ chế","Kiểm soát yield: cân trước/sau","Bảo quản đúng 0–4°C"],sop:["Kiểm tra chất lượng: màu sắc, mùi, độ hoạt động","Cân trước sơ chế → ghi phiếu kiểm soát","Sơ chế: tách đầu, làm sạch chỉ đen, rửa nước lạnh","Cân sau → tính % hao hụt (chuẩn 15%)","Trình bày trên khay đá, dán nhãn, lưu 0–4°C"],keyPoints:["Yield chuẩn 85% — thấp hơn báo Bếp trưởng ngay","Không sơ chế tôm chết quá 30 phút","Dụng cụ hải sản KHÔNG dùng chung thực phẩm khác"]},
+  {id:"TS-T1-002",station:"Hải Sản Tươi Sống",tier:1,name:"Sơ chế Cua Hoàng Đế",duration:60,desc:"Quy trình sơ chế cua hoàng đế, kiểm soát chất lượng và định lượng chuẩn BOM (yield 78%).",objectives:["Kiểm tra cua sống đạt chuẩn","Kỹ thuật sơ chế an toàn","Định lượng theo BOM","Bảo quản đúng chuẩn"],sop:["Kiểm tra cua: còn sống, đủ càng","Gây mê bằng đá lạnh 10 phút","Cân trước → sơ chế → cân sau (yield 78%)","Làm sạch yếm, mang, dạ dày — giữ gạch cua","Khay đá, bọc màng, tối đa 2 giờ"],keyPoints:["Gạch cua là giá trị cao cấp — không bỏ đi","Yield thấp hơn cua thường — không so sánh nhầm","Báo ngay khi cua chết trước sơ chế"]},
+  {id:"TS-T2-001",station:"Hải Sản Tươi Sống",tier:2,name:"Kỹ thuật hấp Hải Sản",duration:90,desc:"Kiểm soát thời gian và nhiệt độ hấp cho từng loại hải sản. Nhận biết hải sản chín đúng chuẩn.",objectives:["Thuộc bảng thời gian hấp từng loại","Kiểm soát nhiệt độ ổn định","Nhận biết hải sản chín đúng","Xử lý sự cố hấp chưa chín/quá"],sop:["Nước sạch không quá 1/3 nồi","Gia nhiệt đến bốc hơi mạnh mới cho hải sản vào","Đặt lên vỉ — không xếp chồng","Canh thời gian theo bảng chuẩn","Kiểm tra bằng que thử","Lấy ra ngay khi chín"],keyPoints:["Tôm hùm 400–600g: 12–15 phút","Cua 800g–1kg: 18–20 phút","Sò điệp: 5–7 phút","Nghêu: mở vỏ là chín (3–5 phút)"]},
+  {id:"TS-T3-001",station:"Hải Sản Tươi Sống",tier:3,name:"Kiểm soát chất lượng nhập hàng",duration:60,desc:"Kiểm tra chất lượng hải sản khi nhập kho, nhận biết dấu hiệu không đạt, từ chối hàng, báo cáo procurement.",objectives:["Kiểm tra 15 loại hải sản HSHG","Lập phiếu kiểm soát đúng form","Quy trình từ chối hàng không đạt","Báo cáo procurement kịp thời"],sop:["Đối chiếu hóa đơn với PO","Cân kiểm tra mẫu 10% lô hàng","Kiểm tra cảm quan: màu, mùi, kết cấu","Kiểm tra nhiệt độ vận chuyển (≤4°C)","Ký nhận hoặc từ chối theo form HSHG","Chụp ảnh lô không đạt — gửi nhóm Procurement"],keyPoints:["Không nhận hải sản có mùi amoniac mạnh","Mắt trong, thịt đàn hồi, không nhớt","Nhiệt độ giao hàng > 6°C → từ chối toàn bộ lô"]},
+  {id:"NU-T1-001",station:"Nướng & Hơi",tier:1,name:"Kỹ thuật nướng than cơ bản",duration:60,desc:"Chuẩn bị than, nhóm lửa, kiểm soát nhiệt độ và kỹ thuật nướng đều nhiệt cho hải sản HSHG.",objectives:["Nhóm than đúng kỹ thuật","Phân biệt 3 mức nhiệt","Nướng đều 2 mặt đúng thời gian","Vệ sinh vỉ nướng đúng quy trình"],sop:["Chuẩn bị than nhãn HSHG phê duyệt","Nhóm lửa bằng mồi than — không dùng xăng/cồn","Chờ than đỏ đều, hết khói đen mới nướng","Thoa dầu lên vỉ trước khi đặt hải sản","Nướng mặt 1 — KHÔNG lật quá sớm","Lật 1 lần — nướng mặt 2 đến chuẩn","Vệ sinh vỉ ngay sau mỗi mẻ"],keyPoints:["Than đỏ hoàn toàn — lửa xanh = còn khói = hỏng mùi","Tôm: 3–4 phút/mặt","Mực: 2–3 phút/mặt","Cá: 5–7 phút/mặt"]},
+  {id:"NU-T2-001",station:"Nướng & Hơi",tier:2,name:"Nướng hải sản với sốt HSHG",duration:75,desc:"Kỹ thuật áp sốt đúng thời điểm, kiểm soát caramel hóa và giữ hương vị đặc trưng.",objectives:["Thuộc 5 loại sốt nướng và tỉ lệ pha","Áp sốt đúng thời điểm tránh cháy","Caramel đẹp không cháy đen","Trình bày đúng chuẩn service"],sop:["Chuẩn bị sốt đúng tỉ lệ HSHG","Nướng sơ 70% thời gian trước khi áp sốt","Áp sốt lần 1 — đợi 1 phút keo lại","Lật — áp sốt mặt còn lại","Áp sốt lần cuối — tăng nhiệt 30 giây caramel","Lấy ra ngay"],keyPoints:["Sốt có đường: áp muộn — áp sớm sẽ cháy","Caramel đẹp = vàng nâu không phải đen","Lấy ra ngay khi đạt màu"]},
+  {id:"LA-T1-001",station:"Lẩu",tier:1,name:"Nước dùng Lẩu chuẩn HSHG",duration:90,desc:"Công thức nước dùng lẩu hải sản đặc trưng HSHG. Định lượng BOM, kiểm soát vị, nấu nhất quán.",objectives:["Thuộc công thức nước dùng","Định lượng đúng BOM","Canh vị: ngọt thanh không mặn","Duy trì nồi lẩu suốt buổi"],sop:["Chuẩn bị xương/tôm khô/củ quả theo BOM","Hầm xương 4 tiếng — hớt bọt thường xuyên","Phi thơm hành tím, sả, gừng","Kết hợp nước hầm + gia vị theo tỉ lệ","Nêm nếm: ngọt thanh, umami, không mặn","Lọc qua rây — giữ nóng 85°C"],keyPoints:["Ngọt từ xương thật — không dùng hạt nêm nhiều","Màu vàng trong hoặc đỏ tươi (tomyum)","Không hâm lại nước dùng đã phục vụ"]},
+  {id:"LA-T2-001",station:"Lẩu",tier:2,name:"Lẩu Tomyum Hải Sản",duration:75,desc:"Công thức lẩu Tomyum hải sản HSHG — cân bằng chua, cay, thơm đúng chuẩn.",objectives:["Pha Tomyum đúng tỉ lệ HSHG","Kiểm soát độ chua cay theo bàn","Thêm hải sản đúng thứ tự","Điều chỉnh vị khi phục vụ"],sop:["Phi thơm sả, lá chanh, riềng, ớt","Thêm nước dùng hải sản — đun sôi","Thêm Tomyum paste theo tỉ lệ BOM","Nêm: nước mắm, đường phèn, chanh","Thêm hải sản: cua → tôm → mực → nghêu","Rắc ngò gai, lá chanh khi phục vụ"],keyPoints:["Không quá cay — khách gia đình, nhóm lớn","Chanh vắt cuối — nấu chung sẽ đắng","Paste Tomyum đã có muối — nêm từng chút"]},
+  {id:"KV-T1-001",station:"Khai Vị",tier:1,name:"Gỏi Hải Sản HSHG",duration:30,desc:"Kỹ thuật làm gỏi, pha nước chấm và trình bày đĩa gỏi hải sản theo chuẩn HSHG.",objectives:["Sơ chế rau gỏi đúng kỹ thuật","Pha nước chấm đúng tỉ lệ BOM","Trộn gỏi đúng thứ tự","Plating đúng chuẩn HSHG"],sop:["Rửa, thái rau gỏi — ráo nước hoàn toàn","Hấp/luộc hải sản đúng chín — để nguội","Pha nước trộn: chanh + đường + mắm + tỏi ớt","Trộn rau trước — hải sản sau","Nếm vị: chua ngọt mặn cân bằng","Trình bày cao tự nhiên, rắc đậu phộng"],keyPoints:["Trộn xong phục vụ ngay — không để lâu","Hải sản nguội hoàn toàn mới trộn","Đậu phộng rang rắc sau cùng giữ độ giòn"]},
+  {id:"KV-T2-001",station:"Khai Vị",tier:2,name:"Plating Premium Hải Sản",duration:45,desc:"Kỹ thuật trình bày cao cấp cho các món khai vị hải sản HSHG.",objectives:["Nguyên tắc plating 5 yếu tố HSHG","Thực hành 3 kiểu trình bày chuẩn","Kiểm soát phần ăn nhất quán","Dùng đúng đồ trang trí theo mùa"],sop:["Kiểm tra đĩa: sạch, đúng nhiệt độ","Đặt thành phần chính trước (focal point)","Garnish theo nguyên tắc lẻ (1 hoặc 3 điểm)","Sauce: chấm điểm hoặc kéo cước","Kiểm tra từ góc nhìn 45°","Lau viền đĩa trước khi ra bàn"],keyPoints:["Ít là nhiều — không cần quá nhiều trang trí","Màu sắc: contrast giữa hải sản và garnish","Chiều cao tạo visual ấn tượng"]},
+  {id:"DU-T1-001",station:"Đồ Uống",tier:1,name:"Wine Service cơ bản",duration:60,desc:"Quy trình phục vụ wine chuyên nghiệp tại HSHG: giới thiệu, mở chai, rót đúng chuẩn.",objectives:["Giới thiệu wine menu đúng cách","Mở chai wine không vỡ nút","Rót đúng 150ml/ly","Bảo quản wine mở đúng kỹ thuật"],sop:["Trình wine menu — gợi ý theo món và ngân sách","Đưa chai khách xem nhãn trước khi mở","Mở bằng sommelier knife","Rót một chút để khách nếm — đợi xác nhận","Rót đủ 150ml — khăn trắng dưới chai","Đặt vào ice bucket hoặc wine rack đúng loại"],keyPoints:["Red wine: 16–18°C — KHÔNG để trong tủ đá","White/Rosé: 8–12°C — luôn trong ice bucket","Wine mở: dùng trong 3 ngày"]},
+  {id:"DU-T2-001",station:"Đồ Uống",tier:2,name:"Food & Wine Pairing HSHG",duration:75,desc:"Ghép đôi wine với thực đơn hải sản HSHG — upsell tự nhiên và tăng trải nghiệm khách.",objectives:["Thuộc 10 cặp ghép đôi chuẩn HSHG","Giải thích pairing đơn giản cho khách","Kỹ năng upsell không gây áp lực","Xử lý khi khách không uống wine"],sop:["Lắng nghe khách chọn món trước","Gợi ý wine phù hợp — tone nhẹ nhàng","Giải thích ngắn lý do ghép đôi 1–2 câu","Đề xuất cả chai và theo ly","Khách ngại wine: gợi ý cocktail/mocktail"],keyPoints:["Hải sản trắng → Sauvignon Blanc, Pinot Grigio","Cua, Tôm Hùm → Chardonnay oaked nhẹ","Nướng than đậm → Rosé hoặc Pinot Noir nhẹ","Lẩu cay → Riesling off-dry hoặc beer thủ công"]},
+  {id:"TM-T1-001",station:"Tráng Miệng",tier:1,name:"Dessert chuẩn HSHG",duration:45,desc:"Chuẩn bị và trình bày các món tráng miệng HSHG — kiểm soát nhiệt độ và visual.",objectives:["Chuẩn bị 5 món tráng miệng cơ bản","Kiểm soát nhiệt độ phục vụ đúng","Trình bày đúng chuẩn thương hiệu","Đúng thời gian giờ cao điểm"],sop:["Kiểm tra stock đầu ca","Chuẩn bị sẵn trước giờ cao điểm","Giữ nhiệt độ phục vụ phù hợp","Trình bày theo ảnh chuẩn","Ra bàn ngay sau khi hoàn thành"],keyPoints:["Kem: -5°C đến -8°C — không để chảy","Món nóng: phục vụ ngay","Dessert = ấn tượng cuối — ảnh hưởng review"]},
+];
+
+const DEF_PROG={"TS-T1-001":{p:100},"TS-T1-002":{p:85},"TS-T2-001":{p:60},"NU-T1-001":{p:80},"NU-T2-001":{p:20},"LA-T1-001":{p:100},"LA-T2-001":{p:15},"KV-T1-001":{p:40},"DU-T1-001":{p:0}};
+
+function App(){
+  const [screen,setScreen]=useState("login");
+  const [emp,setEmp]=useState({id:"",name:""});
+  const [err,setErr]=useState("");
+  const [prog,setProg]=useState({...DEF_PROG});
+  const [mod,setMod]=useState(null);
+  const [msgs,setMsgs]=useState([]);
+  const [inp,setInp]=useState("");
+  const [loading,setLoading]=useState(false);
+  const [station,setStation]=useState("all");
+  const chatRef=useRef(null);
+
+  const stations=[...new Set(MODULES.map(m=>m.station))];
+  const filtered=station==="all"?MODULES:MODULES.filter(m=>m.station===station);
+  const total=MODULES.length;
+  const done=MODULES.filter(m=>(prog[m.id]?.p||0)===100).length;
+  const avg=Math.round(MODULES.reduce((s,m)=>s+(prog[m.id]?.p||0),0)/total);
+
+  useEffect(()=>{
+    if(chatRef.current) chatRef.current.scrollTop=chatRef.current.scrollHeight;
+  },[msgs,loading]);
+
+  function login(){
+    if(!emp.id.trim()||!emp.name.trim()){setErr("Vui lòng nhập đầy đủ thông tin.");return;}
+    setErr("");setScreen("app");
+  }
+
+  function selectMod(m){
+    setMod(m);
+    setMsgs([{r:"ai",t:`Xin chào! Mình là AI Trợ Lý Đào Tạo HSHG.\n\nHôm nay học: "${m.name}"\n\n📋 ${m.desc}\n\nNhấn các nút nhanh bên dưới hoặc hỏi trực tiếp nhé! 🎯`}]);
+    if((prog[m.id]?.p||0)<10) setProg(v=>({...v,[m.id]:{p:10}}));
+  }
+
+  async function send(text){
+    const t=text||inp;
+    if(!t.trim()||loading||!mod) return;
+    setInp("");
+    const history=[...msgs,{r:"user",t}];
+    setMsgs(history);
+    setLoading(true);
+    try{
+      const res=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-haiku-4-5-20251001",
+          max_tokens:800,
+          system:`Bạn là AI Trợ Lý Đào Tạo của Hải Sản Hoàng Gia (HSHG).
+Module: ${mod.name} (${mod.station} - Tier ${mod.tier})
+Mô tả: ${mod.desc}
+SOP: ${(mod.sop||[]).join(" | ")}
+Điểm chính: ${(mod.keyPoints||[]).join(" | ")}
+Quy tắc: Dùng tiếng Việt, ngắn gọn, thực chiến. "Kiểm tra nhanh"→3 câu hỏi có số thứ tự, chờ trả lời. "SOP chuẩn"→từng bước có số. "Mẹo thực chiến"→3-4 tip quan trọng nhất. Bullet points dễ nhớ.`,
+          messages:history.map(m=>({role:m.r==="user"?"user":"assistant",content:m.t})),
+        })
+      });
+      const data=await res.json();
+      const reply=data.content?.[0]?.text||"Xin lỗi, có lỗi xảy ra.";
+      setMsgs(v=>[...v,{r:"ai",t:reply}]);
+      if(reply.includes("/10")||(reply.includes("Đúng")&&reply.includes("Chưa"))){
+        const cur=prog[mod.id]?.p||0;
+        if(cur<100) setProg(v=>({...v,[mod.id]:{p:Math.min(100,cur+25)}}));
+      }
+    }catch(e){
+      setMsgs(v=>[...v,{r:"ai",t:"⚠️ Lỗi kết nối. Vui lòng thử lại."}]);
+    }
+    setLoading(false);
+  }
+
+  if(screen==="login") return React.createElement("div",{style:{height:"100vh",background:NAVY,display:"flex",alignItems:"center",justifyContent:"center"}},
+    React.createElement("div",{style:{background:"white",borderRadius:18,padding:"44px 40px",width:380,textAlign:"center",boxShadow:"0 12px 40px rgba(0,0,0,0.3)"}},
+      React.createElement("div",{style:{fontSize:52,marginBottom:12}},"🦞"),
+      React.createElement("div",{style:{fontSize:20,fontWeight:700,color:NAVY,letterSpacing:"0.5px"}},"HẢI SẢN HOÀNG GIA"),
+      React.createElement("div",{style:{fontSize:13,color:"#9ca3af",marginTop:4,marginBottom:32}},"Learning & Development Portal"),
+      ["Mã nhân viên (vd: NV-001)","Họ và tên"].map((ph,i)=>
+        React.createElement("input",{key:i,placeholder:ph,value:i===0?emp.id:emp.name,onChange:e=>setEmp(v=>i===0?{...v,id:e.target.value}:{...v,name:e.target.value}),onKeyDown:e=>e.key==="Enter"&&login(),style:{width:"100%",padding:"11px 16px",border:"1.5px solid #e5e7eb",borderRadius:10,fontSize:14,marginBottom:10,outline:"none",display:"block",transition:"border 0.15s"},onFocus:e=>e.target.style.borderColor=GOLD,onBlur:e=>e.target.style.borderColor="#e5e7eb"})
+      ),
+      React.createElement("button",{onClick:login,style:{width:"100%",padding:"13px",background:NAVY,color:"white",border:"none",borderRadius:10,fontSize:15,fontWeight:600,cursor:"pointer",marginTop:4,letterSpacing:"0.3px"}},"Đăng nhập →"),
+      err&&React.createElement("div",{style:{color:"#dc2626",fontSize:12,marginTop:10}},err)
+    )
+  );
+
+  return React.createElement("div",{style:{display:"flex",flexDirection:"column",height:"100vh",background:"#f5f4f0",overflow:"hidden"}},
+    // Header
+    React.createElement("div",{style:{background:NAVY,color:"white",padding:"0 22px",height:56,display:"flex",alignItems:"center",justifyContent:"space-between",flexShrink:0}},
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:12}},
+        React.createElement("span",{style:{fontSize:24}},"🦞"),
+        React.createElement("div",null,
+          React.createElement("div",{style:{fontSize:14,fontWeight:700,letterSpacing:"0.5px",color:GOLD_L}},"HẢI SẢN HOÀNG GIA"),
+          React.createElement("div",{style:{fontSize:11,opacity:0.6}},"Learning Portal · AI-Powered")
+        )
+      ),
+      React.createElement("div",{style:{display:"flex",alignItems:"center",gap:24}},
+        React.createElement("div",{style:{textAlign:"center"}},React.createElement("div",{style:{fontSize:18,fontWeight:700,color:GOLD_L}},avg+"%"),React.createElement("div",{style:{fontSize:10,opacity:0.6}},"Tiến độ")),
+        React.createElement("div",{style:{textAlign:"center"}},React.createElement("div",{style:{fontSize:18,fontWeight:700,color:GOLD_L}},done+"/"+total),React.createElement("div",{style:{fontSize:10,opacity:0.6}},"Hoàn thành")),
+        React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,cursor:"pointer"},onClick:()=>setScreen("login")},
+          React.createElement("div",{style:{width:32,height:32,borderRadius:"50%",background:GOLD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:NAVY}},emp.name.split(" ").pop().slice(0,2).toUpperCase()),
+          React.createElement("span",{style:{fontSize:13}},emp.name.split(" ").pop())
+        )
+      )
+    ),
+    // Body
+    React.createElement("div",{style:{display:"flex",flex:1,overflow:"hidden"}},
+      // Sidebar
+      React.createElement("div",{style:{width:300,background:"white",borderRight:"1px solid rgba(0,0,0,0.08)",display:"flex",flexDirection:"column",flexShrink:0}},
+        React.createElement("div",{style:{padding:"10px 14px",borderBottom:"1px solid rgba(0,0,0,0.07)"}},
+          React.createElement("div",{style:{display:"flex",gap:5,flexWrap:"wrap"}},
+            ["all",...stations].map(s=>
+              React.createElement("button",{key:s,onClick:()=>setStation(s),style:{padding:"4px 11px",borderRadius:12,fontSize:11,border:"none",cursor:"pointer",fontWeight:station===s?600:400,background:station===s?NAVY:"#f3f4f6",color:station===s?"white":"#6b7280",transition:"all 0.12s"}},s==="all"?"Tất cả":s.split(" ")[0])
+            )
+          )
+        ),
+        React.createElement("div",{style:{flex:1,overflowY:"auto"}},
+          filtered.map(m=>{
+            const p=prog[m.id]?.p||0;
+            const active=mod?.id===m.id;
+            return React.createElement("div",{key:m.id,onClick:()=>selectMod(m),style:{padding:"12px 15px",cursor:"pointer",borderBottom:"0.5px solid rgba(0,0,0,0.06)",borderLeft:active?"3px solid "+GOLD:"3px solid transparent",background:active?GOLD_L:"transparent",transition:"all 0.1s"}},
+              React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4}},
+                React.createElement("span",{style:{fontSize:13,fontWeight:500,lineHeight:1.4,flex:1,marginRight:6,color:"#1a1a2e"}},m.name),
+                React.createElement("span",{style:{fontSize:10,padding:"2px 7px",borderRadius:6,background:TIER_BG[m.tier],color:TIER_TX[m.tier],fontWeight:700,whiteSpace:"nowrap"}},"T"+m.tier)
+              ),
+              React.createElement("div",{style:{fontSize:11,color:"#9ca3af",marginBottom:6}},m.station+" · "+m.duration+" phút"),
+              React.createElement("div",{style:{display:"flex",alignItems:"center",gap:6}},
+                React.createElement("div",{style:{flex:1,height:4,borderRadius:2,background:"#f3f4f6",overflow:"hidden"}},
+                  React.createElement("div",{style:{height:"100%",width:p+"%",background:pc(p),borderRadius:2,transition:"width 0.3s"}})
+                ),
+                React.createElement("span",{style:{fontSize:11,fontWeight:700,color:pc(p),minWidth:28,textAlign:"right"}},p+"%")
+              )
+            );
+          })
+        )
+      ),
+      // Content
+      React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",overflow:"hidden"}},
+        !mod
+          ? React.createElement("div",{style:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:14,color:"#6b7280"}},
+              React.createElement("div",{style:{fontSize:60}},"🦞"),
+              React.createElement("div",{style:{fontSize:18,fontWeight:600,color:"#1a1a2e"}},"Chọn module để bắt đầu học"),
+              React.createElement("div",{style:{fontSize:14,textAlign:"center",maxWidth:320,lineHeight:1.8}},"AI Trợ Lý Đào Tạo sẽ hỗ trợ học từng module, kiểm tra kiến thức và hướng dẫn SOP chuẩn HSHG."),
+              React.createElement("div",{style:{display:"flex",gap:8,marginTop:6,flexWrap:"wrap",justifyContent:"center"}},
+                ["💬 Hỏi & Đáp","📋 SOP Chuẩn","✅ Kiểm Tra","💡 Mẹo Thực Chiến"].map(f=>
+                  React.createElement("span",{key:f,style:{fontSize:12,padding:"5px 14px",borderRadius:12,background:"white",border:"1px solid rgba(0,0,0,0.1)",color:"#6b7280"}},f)
+                )
+              )
+            )
+          : React.createElement("div",{style:{display:"flex",flexDirection:"column",flex:1,overflow:"hidden"}},
+              // Mod header
+              React.createElement("div",{style:{padding:"14px 22px 11px",background:"white",borderBottom:"1px solid rgba(0,0,0,0.08)",flexShrink:0}},
+                React.createElement("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:9}},
+                  React.createElement("div",null,
+                    React.createElement("div",{style:{fontSize:16,fontWeight:600,color:"#1a1a2e"}},mod.name),
+                    React.createElement("div",{style:{fontSize:12,color:"#9ca3af",marginTop:3}},mod.station+" · Tier "+mod.tier+" · "+mod.duration+" phút")
+                  ),
+                  React.createElement("button",{onClick:()=>setMod(null),style:{background:"none",border:"none",cursor:"pointer",fontSize:22,color:"#9ca3af",padding:"0 4px",lineHeight:1}},"×")
+                ),
+                React.createElement("div",{style:{height:6,borderRadius:3,background:"#f3f4f6",overflow:"hidden"}},
+                  React.createElement("div",{style:{height:"100%",width:(prog[mod.id]?.p||0)+"%",background:pc(prog[mod.id]?.p||0),borderRadius:3,transition:"width 0.4s"}})
+                )
+              ),
+              // Objectives
+              React.createElement("div",{style:{padding:"9px 22px",background:"#fafaf8",borderBottom:"1px solid rgba(0,0,0,0.06)",flexShrink:0}},
+                React.createElement("div",{style:{fontSize:10,fontWeight:700,color:GOLD,letterSpacing:"0.5px",marginBottom:7}},"🎯 MỤC TIÊU HỌC"),
+                React.createElement("div",{style:{display:"flex",flexWrap:"wrap",gap:6}},
+                  (mod.objectives||[]).map((o,i)=>
+                    React.createElement("span",{key:i,style:{fontSize:11,padding:"3px 10px",borderRadius:8,background:"white",border:"0.5px solid rgba(0,0,0,0.09)",color:"#4b5563"}},"✓ "+o)
+                  )
+                )
+              ),
+              // Chat messages
+              React.createElement("div",{ref:chatRef,style:{flex:1,overflowY:"auto",padding:"16px 22px",display:"flex",flexDirection:"column",gap:12,background:"#f5f4f0"}},
+                msgs.map((m,i)=>
+                  React.createElement("div",{key:i,style:{display:"flex",justifyContent:m.r==="user"?"flex-end":"flex-start",alignItems:"flex-start",gap:8}},
+                    m.r==="ai"&&React.createElement("div",{style:{width:30,height:30,borderRadius:"50%",background:NAVY,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0,marginTop:2}},"🦞"),
+                    React.createElement("div",{style:{maxWidth:"73%",padding:"11px 15px",fontSize:13,lineHeight:1.7,whiteSpace:"pre-wrap",background:m.r==="user"?NAVY:"white",color:m.r==="user"?"white":"#1a1a2e",borderRadius:m.r==="user"?"14px 14px 2px 14px":"2px 14px 14px 14px",border:m.r==="user"?"none":"1px solid rgba(0,0,0,0.08)"}},m.t)
+                  )
+                ),
+                loading&&React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8}},
+                  React.createElement("div",{style:{width:30,height:30,borderRadius:"50%",background:NAVY,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}},"🦞"),
+                  React.createElement("div",{style:{padding:"11px 15px",background:"white",borderRadius:"2px 14px 14px 14px",border:"1px solid rgba(0,0,0,0.08)",fontSize:13,color:"#9ca3af"}},"Đang soạn phản hồi...")
+                )
+              ),
+              // Quick prompts
+              React.createElement("div",{style:{padding:"9px 16px",background:"white",borderTop:"1px solid rgba(0,0,0,0.08)",display:"flex",gap:6,overflowX:"auto",flexShrink:0}},
+                QUICK.map(q=>
+                  React.createElement("button",{key:q,onClick:()=>send(q),disabled:loading,style:{padding:"5px 13px",borderRadius:12,fontSize:12,border:"1.5px solid "+GOLD,background:"transparent",color:GOLD,cursor:"pointer",whiteSpace:"nowrap",fontWeight:500,opacity:loading?0.5:1,transition:"background 0.12s"},onMouseEnter:e=>!loading&&(e.target.style.background=GOLD_L),onMouseLeave:e=>e.target.style.background="transparent"},q)
+                )
+              ),
+              // Input
+              React.createElement("div",{style:{padding:"12px 16px",background:"white",borderTop:"1px solid rgba(0,0,0,0.08)",display:"flex",gap:10,flexShrink:0,alignItems:"center"}},
+                React.createElement("input",{value:inp,onChange:e=>setInp(e.target.value),onKeyDown:e=>e.key==="Enter"&&!e.shiftKey&&(e.preventDefault(),send()),disabled:loading,placeholder:"Hỏi AI về module này...",style:{flex:1,padding:"10px 18px",borderRadius:22,border:"1.5px solid rgba(0,0,0,0.12)",fontSize:13,background:"#f9f9f7",outline:"none",color:"#1a1a2e",transition:"border 0.15s"},onFocus:e=>e.target.style.borderColor=GOLD,onBlur:e=>e.target.style.borderColor="rgba(0,0,0,0.12)"}),
+                React.createElement("button",{onClick:()=>send(),disabled:loading||!inp.trim(),style:{padding:"10px 20px",borderRadius:22,background:NAVY,color:"white",border:"none",cursor:"pointer",fontSize:13,fontWeight:600,opacity:loading||!inp.trim()?0.45:1,transition:"opacity 0.15s",whiteSpace:"nowrap"}},"Gửi ↗")
+              )
+            )
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
